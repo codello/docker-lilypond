@@ -1,0 +1,45 @@
+name: Docker Image
+on: push
+
+env:
+  DOCKER_REPO: codello/lilypond
+
+jobs:
+  build:
+    name: Build ${{ matrix.lilypond.version || matrix.lilypond }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lilypond: 
+          - "2.18.2"
+          - "2.19.64"
+          - "2.19.84"
+          - version: "2.20.0"
+            tags: [ latest, latestest ]
+          - version: "2.21.0"
+            tags: [ dev ]
+    env:
+      LY_VERSION: ${{ matrix.lilypond.version || matrix.lilypond }}
+    steps:
+      - run: echo ::set-env name=IMAGE::"$DOCKER_REPO:$LY_VERSION"
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Build Image
+        run: |
+          docker build --build-arg VERSION="$LY_VERSION" . --tag "$IMAGE"
+      - name: Test Image
+        run: |
+          docker run -v $(pwd):/ly "$IMAGE" test.ly
+          test -f test.pdf
+      - name: Tag Image
+        if: matrix.lilypond.tags
+        run: |
+          for tag in ${{ matrix.lilypond.tags }}; do
+            docker tag "$IMAGE" "$DOCKER_REPO:$tag"
+          done
+      - name: Push Image
+        if: github.ref == 'refs/heads/master'
+        run: |
+          docker login --username "$DOCKERHUB_USERNAME" --password "$DOCKERHUB_PASSWORD"
+          docker push "$DOCKER_REPO"
