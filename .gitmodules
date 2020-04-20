@@ -1,0 +1,45 @@
+[submodule "fonts/lilyjazz"]
+	path = fonts/lilyjazz
+	url = https://github.com/OpenLilyPondFonts/lilyjazz
+[submodule "fonts/profondo"]
+	path = fonts/profondo
+	url = https://github.com/OpenLilyPondFonts/profondo
+[submodule "fonts/haydn"]
+	path = fonts/haydn
+	url = https://github.com/OpenLilyPondFonts/haydn
+[submodule "fonts/beethoven"]
+	path = fonts/beethoven
+	url = https://github.com/OpenLilyPondFonts/beethoven
+[submodule "fonts/paganini"]
+	path = fonts/paganini
+	url = https://github.com/OpenLilyPondFonts/paganini
+[submodule "fonts/improviso"]
+	path = fonts/improviso
+	url = https://github.com/OpenLilyPondFonts/improviso
+[submodule "fonts/bravura"]
+	path = fonts/bravura
+	url = https://github.com/OpenLilyPondFonts/bravura
+[submodule "fonts/lilyboulez"]
+	path = fonts/lilyboulez
+	url = https://github.com/OpenLilyPondFonts/lilyboulez
+[submodule "fonts/scorlatti"]
+	path = fonts/scorlatti
+	url = https://github.com/OpenLilyPondFonts/scorlatti
+[submodule "fonts/lv-goldenage"]
+	path = fonts/lv-goldenage
+	url = https://github.com/OpenLilyPondFonts/lv-goldenage
+[submodule "fonts/gutenberg1939"]
+	path = fonts/gutenberg1939
+	url = https://github.com/OpenLilyPondFonts/gutenberg1939
+[submodule "fonts/gonville"]
+	path = fonts/gonville
+	url = https://github.com/OpenLilyPondFonts/gonville
+[submodule "fonts/ross"]
+	path = fonts/ross
+	url = https://github.com/OpenLilyPondFonts/ross
+[submodule "fonts/sebastiano"]
+	path = fonts/sebastiano
+	url = https://github.com/OpenLilyPondFonts/sebastiano
+[submodule "fonts/cadence"]
+	path = fonts/cadence
+	url = https://github.com/OpenLilyPondFonts/cadence
