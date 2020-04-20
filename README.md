@@ -1,6 +1,16 @@
 # LilyPond in Docker – “... music notation for everyone“
 
+![Docker Image](https://github.com/Codello/docker-lilypond/workflows/Docker%20Image/badge.svg)
+![Docker Pulls](https://img.shields.io/docker/pulls/codello/lilypond)
+![Docker Image Version (latest semver)](https://img.shields.io/docker/v/codello/lilypond)
+
 This docker image provides an easy way do run [LilyPond](https://lilypond.org) inside docker.
+
+## Available Tags
+
+The tags of this image correspond to LilyPond versions. So in order to use the 2.20.0 version you can use `codello/lilypond:2.20.0`. Not all LilyPond versions are available.
+
+There are two variants of each tag. The normal variant and the *fonts* variant. The *fonts* variant is named `<version>-fonts` (e.g. `codello/lilypond:2.20.0-fonts`) and includes some system fonts as well as all of the [Open LilyPond Fonts](https://github.com/OpenLilyPondFonts).
 
 ## Running LilyPond
 

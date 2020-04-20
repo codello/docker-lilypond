@@ -1,41 +1,112 @@
-FROM ubuntu
 ARG VERSION=2.20.0
 
+########################################################################################
+# Build LilyPond on the latest Ubuntu. Unfortunately compiling does not work on alpine.
+########################################################################################
+FROM ubuntu AS build-base
+ARG VERSION
+
+# Install Build Dependencies
+RUN apt-get -qq --yes update && \
+    # LilyPond Build Dependencies
+    # See http://lilypond.org/doc/v2.20/Documentation/topdocs/INSTALL#other
+    apt-get -qq --yes install \
+        build-essential \
+        python-dev \
+        autoconf \
+        pkg-config \
+        bison \
+        flex \
+        gettext \
+        make \
+        texlive-base \
+        texlive-metapost \
+        perl \
+        texinfo \
+        fontforge \
+        t1utils \
+        texlive-lang-cyrillic \
+        libpango1.0-dev \
+        # The following dependencies are required to build guile
+        libtool \
+        libgmp-dev \
+        libreadline-dev \
+        # Use curl to download additional resources
+        curl
+
+WORKDIR /build
+RUN curl -fsSL https://ftp.gnu.org/gnu/guile/guile-1.8.8.tar.gz | tar -xz  && \
+    curl -fsSLO http://www.gust.org.pl/projects/e-foundry/tex-gyre/whole/tg2_501otf.zip && \
+    unzip -q tg2_501otf.zip && \
+    curl -fsSL https://lilypond.org/download/sources/v${VERSION%.*}/lilypond-$VERSION.tar.gz | tar -xz
+
+ENV PATH="/opt/bin:$PATH" PKG_CONFIG_PATH="/opt/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+# Install Guile 1.8.8
+WORKDIR /build/guile-1.8.8
+RUN ./configure --prefix=/opt --disable-error-on-warning && \
+    make -s -j$(($(nproc)+1)) && \
+    make -s install
+
+# Install LilyPond
+WORKDIR "/build/lilypond-$VERSION"
+RUN ./autogen.sh --prefix=/opt --disable-documentation --with-texgyre-dir=/build/tg2_501otf && \
+    make -s -j$(($(nproc)+1)) && \
+    make -s install
+
+
+########################################################################################
+# Install runtime dependencies and copy the build artifacts from the previous stage.
+########################################################################################
+FROM ubuntu AS base
+ARG VERSION
 LABEL maintainer="Kim Wittenburg <codello@wittenburg.kim>" version="$VERSION"
 
-# Install Packages and System Fonts
-RUN apt-get update --yes \
-    && echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections \
-    && apt-get install --yes \
-        curl \
-        make \
-        ttf-mscorefonts-installer \
-        fontconfig \
-        sudo \
+RUN apt-get -qq --yes update && \
+    apt-get -qq --yes install \
+        libfontconfig1 \
+        libfreetype6 \
+        ghostscript \
+        libpangoft2-1.0 \
+        libltdl7 \
+        python-minimal && \
     # Update Fonts
-    && apt-get -y purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-    && rm -rf /var/lib/apt/lists/*
+    apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and Install LilyPond
-ADD http://lilypond.org/download/binaries/linux-64/lilypond-$VERSION-1.linux-64.sh lilypond.sh
-RUN sh lilypond.sh --batch \
-    && rm -f lilypond.sh
+COPY --from=build-base /opt /opt
+ENV PATH="/opt/bin:$PATH" LD_LIBRARY_PATH="/opt/lib:$LD_LIBRARY_PATH"
 
-COPY ./fonts/*/otf ./fonts/*/woff \
-    /usr/local/lilypond/usr/share/lilypond/current/fonts/otf/
-COPY ./fonts/*/svg/* /usr/local/lilypond/usr/share/lilypond/current/fonts/svg/
-COPY ./fonts/*/stylesheet/* /usr/local/lilypond/usr/share/lilypond/current/ly/
-COPY ./fonts/*/supplementary-fonts ./fonts/*/supplementary-files/*/*.otf \
-    /usr/share/fonts/
-    
-# Run as non-root user and allow passwordless sudo
-RUN useradd --shell /bin/bash lilypond && \
-    echo "lilypond ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/lilypond && \
-    chmod 0440 /etc/sudoers.d/lilypond && \
-    mkdir /ly && \
-    chown lilypond:lilypond /ly
-
-USER lilypond
 WORKDIR /ly
-
 ENTRYPOINT ["lilypond"]
+
+
+########################################################################################
+# Install Microsoft fonts in a new ubuntu environment
+########################################################################################
+FROM ubuntu AS build-fonts
+
+# Install Additional Fonts
+WORKDIR /build/msfonts
+RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
+    apt-get -qq --yes update && \
+    apt-get -qq --yes install \
+        wget \
+        ttf-dejavu \
+        ttf-mscorefonts-installer && \
+    # This fix is taken from here:
+    # https://askubuntu.com/questions/1163560/change-mirror-for-ttf-mscorefonts-installer
+    awk '/Url/ {sub("downloads[.]sourceforge[.]net/corefonts","cfhcable.dl.sourceforge.net/project/corefonts/the%20fonts/final",$2); system("wget "$2)}' /usr/share/package-data-downloads/ttf-mscorefonts-installer && \
+    /usr/lib/msttcorefonts/update-ms-fonts $(pwd)/*.exe
+
+
+########################################################################################
+# Copy fonts into the final image.
+########################################################################################
+FROM base AS fonts
+COPY --from=build-fonts /usr/share/fonts /usr/share/fonts
+COPY ./fonts/*/supplementary-fonts/*.otf ./fonts/*/supplementary-files/*/*.otf /usr/share/fonts/opentype/
+COPY ./fonts/*/supplementary-fonts/*.ttf ./fonts/*/supplementary-files/*/*.ttf /usr/share/fonts/truetype/
+COPY ./fonts/*/stylesheet/* "/opt/share/lilypond/$VERSION/ly/"
+COPY ./fonts/*/otf ./fonts/*/woff "/opt/share/lilypond/$VERSION/fonts/otf/"
+COPY ./fonts/*/svg/* "/opt/share/lilypond/$VERSION/fonts/svg/"

@@ -1,5 +1,9 @@
-\version "2.20.0"
+\header {
+  title = "This is a test"
+  subtitle = "in C major"
+  composer = "Docker"
+}
 
 \relative c' {
-  c d e f
+  c-"rit." d-. e-- f
 }
