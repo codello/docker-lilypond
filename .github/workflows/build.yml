@@ -12,20 +12,11 @@ jobs:
       fail-fast: false
       matrix:
         lilypond:
-          - "2.19.60"
-          - "2.19.61"
-          - "2.19.62"
-          - "2.19.63"
           - "2.19.64"
-          - "2.19.65"
-          - "2.19.80"
-          - "2.19.81"
-          - "2.19.82"
-          - "2.19.83"
           - "2.19.84"
           - "2.20.0"
           - "2.21.0"
-        target: [ "base", "fonts" ]
+        target: [ "fonts", "basic", "shell" ]
         include:
           - lilypond: "2.19.84"
             tags: [ "2.19" ]
@@ -55,7 +46,7 @@ jobs:
             docker tag "$REPO:$VERSION" "$REPO:$TAG"
           done
       - name: Rename Tags
-        if: matrix.target != 'base'
+        if: matrix.target != 'fonts'
         run: |
           TAGS=$(docker image inspect -f '{{ range $index, $tag := .RepoTags }}{{if $index}} {{end}}{{$tag}}{{end}}' "$REPO:$VERSION")
           for TAG in $TAGS; do

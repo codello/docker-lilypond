@@ -3,7 +3,7 @@ ARG VERSION=2.20.0
 ########################################################################################
 # Build LilyPond on the latest Ubuntu. Unfortunately compiling does not work on alpine.
 ########################################################################################
-FROM ubuntu AS build-base
+FROM ubuntu AS build-basic
 ARG VERSION
 
 # Install Build Dependencies
@@ -58,7 +58,7 @@ RUN ./autogen.sh --prefix=/opt --disable-documentation --with-texgyre-dir=/build
 ########################################################################################
 # Install runtime dependencies and copy the build artifacts from the previous stage.
 ########################################################################################
-FROM ubuntu AS base
+FROM ubuntu AS basic
 ARG VERSION
 LABEL maintainer="Kim Wittenburg <codello@wittenburg.kim>" version="$VERSION"
 
@@ -74,7 +74,7 @@ RUN apt-get -qq --yes update && \
     apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=build-base /opt /opt
+COPY --from=build-basic /opt /opt
 ENV PATH="/opt/bin:$PATH" LD_LIBRARY_PATH="/opt/lib:$LD_LIBRARY_PATH"
 
 WORKDIR /ly
@@ -103,10 +103,23 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
 ########################################################################################
 # Copy fonts into the final image.
 ########################################################################################
-FROM base AS fonts
+FROM basic AS fonts
 COPY --from=build-fonts /usr/share/fonts /usr/share/fonts
 COPY ./fonts/*/supplementary-fonts/*.otf ./fonts/*/supplementary-files/*/*.otf /usr/share/fonts/opentype/
 COPY ./fonts/*/supplementary-fonts/*.ttf ./fonts/*/supplementary-files/*/*.ttf /usr/share/fonts/truetype/
 COPY ./fonts/*/stylesheet/* "/opt/share/lilypond/$VERSION/ly/"
 COPY ./fonts/*/otf ./fonts/*/woff "/opt/share/lilypond/$VERSION/fonts/otf/"
 COPY ./fonts/*/svg/* "/opt/share/lilypond/$VERSION/fonts/svg/"
+
+
+########################################################################################
+# The shell image is useful in CI and other non-interactive environments where you might
+# want to execute more than one lilypond command.
+########################################################################################
+FROM fonts AS shell
+RUN apt-get -qq --yes update && \
+    apt-get -qq --yes install make && \
+    apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
+    rm -rf /var/lib/apt/lists/*
+
+ENTRYPOINT []
