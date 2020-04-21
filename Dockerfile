@@ -104,6 +104,8 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
 # Copy fonts into the final image.
 ########################################################################################
 FROM basic AS fonts
+ARG VERSION
+
 COPY --from=build-fonts /usr/share/fonts /usr/share/fonts
 COPY ./fonts/*/supplementary-fonts/*.otf ./fonts/*/supplementary-files/*/*.otf /usr/share/fonts/opentype/
 COPY ./fonts/*/supplementary-fonts/*.ttf ./fonts/*/supplementary-files/*/*.ttf /usr/share/fonts/truetype/
