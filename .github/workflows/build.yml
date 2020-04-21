@@ -3,10 +3,11 @@ on: push
 
 env:
   REPO: codello/lilypond
+  default_target: fonts
 
 jobs:
   build:
-    name: Build ${{ matrix.lilypond.version || matrix.lilypond }}-${{ matrix.target }}
+    name: Build ${{ matrix.lilypond.version || matrix.lilypond }} ${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -16,7 +17,7 @@ jobs:
           - "2.19.84"
           - "2.20.0"
           - "2.21.0"
-        target: [ "fonts", "basic", "shell" ]
+        target: [ "", "basic", "shell" ]
         include:
           - lilypond: "2.19.84"
             tags: [ "2.19" ]
@@ -33,7 +34,7 @@ jobs:
           submodules: true
       - name: Build Image
         run: |
-          docker build --target ${{ matrix.target }} --build-arg VERSION="${{ matrix.lilypond }}" --tag "$REPO:$VERSION" .
+          docker build --target ${{ matrix.target || env.default_target }} --build-arg VERSION="${{ matrix.lilypond }}" --tag "$REPO:$VERSION" .
       - name: Test Image
         run: |
           if [[ "${{ matrix.target }}" = "shell" ]]; then
@@ -49,7 +50,7 @@ jobs:
             docker tag "$REPO:$VERSION" "$REPO:$TAG"
           done
       - name: Rename Tags
-        if: matrix.target != 'fonts'
+        if: matrix.target != ''
         run: |
           TAGS=$(docker image inspect -f '{{ range $index, $tag := .RepoTags }}{{if $index}} {{end}}{{$tag}}{{end}}' "$REPO:$VERSION")
           for TAG in $TAGS; do
