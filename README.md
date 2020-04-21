@@ -10,7 +10,11 @@ This docker image provides an easy way do run [LilyPond](https://lilypond.org) i
 
 The tags of this image correspond to LilyPond versions. So in order to use the 2.20.0 version you can use `codello/lilypond:2.20.0`. Not all LilyPond versions are available.
 
-There are two variants of each tag. The normal variant and the *fonts* variant. The *fonts* variant is named `<version>-fonts` (e.g. `codello/lilypond:2.20.0-fonts`) and includes some system fonts as well as all of the [Open LilyPond Fonts](https://github.com/OpenLilyPondFonts).
+### Variants
+
+- The base image contains a LilyPond installation, some additional fonts as well as all of the [Open LilyPond Fonts](https://github.com/OpenLilyPondFonts). These images are tagged with the LilyPond version number (e.g. `2.20.0`). `latest` is always the latest stable version and `dev` the latest unstable one.
+- The `basic` variant does not include any additional fonts. These images are tagged with a `-basic` suffix (e.g. `2.20.0-basic`). `basic` is always the latest stable version and `dev-basic` the latest unstable one.
+- The `shell` variant includes all fonts but does not behave as an executable. This is useful if you want to run multiple LilyPond commands (or want to use a Makefile). You can execut LilyPond in this container just fine. These images are tagged with a `-shell` suffix (e.g. `2.20.0-shell`). `shell` is a always the latest stable version and `dev-shell` the latest unstable one.
 
 ## Running LilyPond
 
