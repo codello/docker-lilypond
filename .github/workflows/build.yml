@@ -26,7 +26,6 @@ jobs:
             tags: [ "2.21", "dev" ]
     env:
       VERSION: ${{ matrix.lilypond }}
-      # run: echo ::set-env name=IMAGE::"${{ matrix.lilypond }}"
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
