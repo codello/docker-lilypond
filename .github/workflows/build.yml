@@ -2,14 +2,14 @@ name: Docker Image
 on: push
 
 env:
-  DOCKER_REPO: codello/lilypond
+  REPO: codello/lilypond
 
 jobs:
   build:
     name: Build ${{ matrix.lilypond.version || matrix.lilypond }}-${{ matrix.target }}
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         lilypond:
           - "2.19.60"
@@ -20,7 +20,7 @@ jobs:
           - "2.19.65"
           - "2.19.80"
           - "2.19.81"
-          - "2.19.92"
+          - "2.19.82"
           - "2.19.83"
           - "2.19.84"
           - "2.20.0"
@@ -28,44 +28,47 @@ jobs:
         target: [ "base", "fonts" ]
         include:
           - lilypond: "2.19.84"
-            target: base
             tags: [ "2.19" ]
           - lilypond: "2.20.0"
-            target: base
             tags: [ "2.20", latest ]
           - lilypond: "2.21.0"
-            target: base
             tags: [ "2.21", "dev" ]
+    env:
+      VERSION: ${{ matrix.lilypond }}
+      # run: echo ::set-env name=IMAGE::"${{ matrix.lilypond }}"
     steps:
-      - name: Set Image Name
-        run: echo ::set-env name=IMAGE::"$DOCKER_REPO:${{ matrix.lilypond }}"
       - name: Checkout Code
         uses: actions/checkout@v2
         with:
           submodules: true
       - name: Build Image
         run: |
-          docker build --target ${{ matrix.target }} --build-arg VERSION="${{ matrix.lilypond }}" --tag "$IMAGE" .
+          docker build --target ${{ matrix.target }} --build-arg VERSION="${{ matrix.lilypond }}" --tag "$REPO:$VERSION" .
       - name: Test Image
         run: |
-          docker run -v $(pwd):/ly "$IMAGE" test.ly
+          docker run -v $(pwd):/ly "$REPO:$VERSION" test.ly
           test -f test.pdf
       - name: Add Additional Tags
-        if: matrix.lilypond.tags
+        if: matrix.tags
         run: |
-          for TAG in ${{ join(matrix.lilypond.tags, ' ') }}; do
-            docker tag "$IMAGE" "$DOCKER_REPO:$TAG"
+          for TAG in ${{ join(matrix.tags, ' ') }}; do
+            docker tag "$REPO:$VERSION" "$REPO:$TAG"
           done
       - name: Rename Tags
         if: matrix.target != 'base'
         run: |
-          images=$(docker image inspect -f '{{ range $index, $tag := .RepoTags }}{{if $index}} {{end}}{{$tag}}{{end}}' "$IMAGE")
-          for TAG in $images; do
-            docker tag "$TAG" "$TAG-${{ matrix.target }}"
+          TAGS=$(docker image inspect -f '{{ range $index, $tag := .RepoTags }}{{if $index}} {{end}}{{$tag}}{{end}}' "$REPO:$VERSION")
+          for TAG in $TAGS; do
+            if [[ "$TAG" = "$REPO:latest" ]]; then
+              NEW_TAG="$REPO:${{ matrix.target }}"
+            else
+              NEW_TAG="$TAG-${{ matrix.target }}"
+            fi
+            docker tag "$TAG" "$NEW_TAG"
             docker rmi "$TAG"
           done
       - name: Push Image
         if: github.ref == 'refs/heads/master'
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker push "$DOCKER_REPO"
+          docker push "$REPO"
