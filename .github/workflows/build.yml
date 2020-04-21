@@ -36,7 +36,11 @@ jobs:
           docker build --target ${{ matrix.target }} --build-arg VERSION="${{ matrix.lilypond }}" --tag "$REPO:$VERSION" .
       - name: Test Image
         run: |
-          docker run -v $(pwd):/ly "$REPO:$VERSION" test.ly
+          if [[ "${{ matrix.target }}" = "shell" ]]; then
+            docker run -v $(pwd):/ly "$REPO:$VERSION" lilypond test.ly
+          else
+            docker run -v $(pwd):/ly "$REPO:$VERSION" test.ly
+          fi
           test -f test.pdf
       - name: Add Additional Tags
         if: matrix.tags
