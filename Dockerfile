@@ -120,7 +120,9 @@ COPY ./fonts/*/svg/* "/opt/share/lilypond/$VERSION/fonts/svg/"
 ########################################################################################
 FROM fonts AS shell
 RUN apt-get -qq --yes update && \
-    apt-get -qq --yes install make && \
+    apt-get -qq --yes install \
+        make \
+        jq && \
     apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
