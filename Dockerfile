@@ -122,7 +122,8 @@ FROM fonts AS shell
 RUN apt-get -qq --yes update && \
     apt-get -qq --yes install \
         make \
-        jq && \
+        jq \
+        unzip && \
     apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
