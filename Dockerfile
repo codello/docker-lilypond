@@ -124,7 +124,8 @@ RUN apt-get -qq --yes update && \
         make \
         jq \
         unzip \
-        curl && \
+        curl \
+        ca-certificates && \
     apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
