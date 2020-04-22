@@ -123,7 +123,8 @@ RUN apt-get -qq --yes update && \
     apt-get -qq --yes install \
         make \
         jq \
-        unzip && \
+        unzip \
+        curl && \
     apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
