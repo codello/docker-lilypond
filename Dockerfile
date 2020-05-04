@@ -5,6 +5,7 @@ ARG VERSION=2.20.0
 ########################################################################################
 FROM ubuntu AS build-basic
 ARG VERSION
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install Build Dependencies
 RUN apt-get -qq --yes update && \
