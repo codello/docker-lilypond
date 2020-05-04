@@ -13,17 +13,18 @@ jobs:
       fail-fast: false
       matrix:
         lilypond:
-          - "2.19.64"
+          - "2.19.65"
           - "2.19.84"
           - "2.20.0"
           - "2.21.0"
+          - "2.21.1"
         target: [ "", "basic", "shell" ]
         include:
           - lilypond: "2.19.84"
             tags: [ "2.19" ]
           - lilypond: "2.20.0"
             tags: [ "2.20", latest ]
-          - lilypond: "2.21.0"
+          - lilypond: "2.21.1"
             tags: [ "2.21", "dev" ]
     env:
       VERSION: ${{ matrix.lilypond }}
