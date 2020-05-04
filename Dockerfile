@@ -5,6 +5,7 @@ ARG VERSION=2.20.0
 ########################################################################################
 FROM ubuntu AS build-basic
 ARG VERSION
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install Build Dependencies
 RUN apt-get -qq --yes update && \
@@ -60,6 +61,7 @@ RUN ./autogen.sh --prefix=/opt --disable-documentation --with-texgyre-dir=/build
 ########################################################################################
 FROM ubuntu AS basic
 ARG VERSION
+ARG DEBIAN_FRONTEND=noninteractive
 LABEL maintainer="Kim Wittenburg <codello@wittenburg.kim>" version="$VERSION"
 
 RUN apt-get -qq --yes update && \
@@ -69,7 +71,7 @@ RUN apt-get -qq --yes update && \
         ghostscript \
         libpangoft2-1.0 \
         libltdl7 \
-        python-minimal && \
+        python2-minimal && \
     # Update Fonts
     apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
@@ -85,6 +87,7 @@ ENTRYPOINT ["lilypond"]
 # Install Microsoft fonts in a new ubuntu environment
 ########################################################################################
 FROM ubuntu AS build-fonts
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install Additional Fonts
 WORKDIR /build/msfonts
