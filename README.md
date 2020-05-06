@@ -31,3 +31,9 @@ When running lilypond this way you need to pay attention to the following detail
 - Any arguments following will be passed directly to `lilypond`.
 - The output will be put into the `/ly` directory as well by default. If you use other directories remember to add bind mounts for those as well.
 
+## A note on compilation
+
+This docker image compiles Guile and LilyPond from source. The compilation process is quite demanding on the CPU and might take a while. Compilation via GitHub Actions takes ~10 minutes.
+
+Both LilyPond and Guile are compiled into the `/opt` folder. This way we can take advantage of docker’s [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/) and get a smaller final image. Compilation into `/usr/local` would work just as well but would require more effort in the later stages (because we need to isolate the LilyPond files from other programs in the prefix).
+
