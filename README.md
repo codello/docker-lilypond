@@ -2,7 +2,6 @@
 
 ![Docker Image](https://github.com/Codello/docker-lilypond/workflows/Docker%20Image/badge.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/codello/lilypond)
-![Docker Image Version (latest semver)](https://img.shields.io/docker/v/codello/lilypond)
 
 This docker image provides an easy way do run [LilyPond](https://lilypond.org) inside docker.
 
