@@ -6,6 +6,7 @@ ARG VERSION=2.20.0
 FROM ubuntu AS build-basic
 ARG VERSION
 ARG DEBIAN_FRONTEND=noninteractive
+ENV PATH="/opt/bin:$PATH" PKG_CONFIG_PATH="/opt/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # Install Build Dependencies
 RUN apt-get -qq --yes update && \
@@ -13,7 +14,7 @@ RUN apt-get -qq --yes update && \
     # See http://lilypond.org/doc/v2.20/Documentation/topdocs/INSTALL#other
     apt-get -qq --yes install \
         build-essential \
-        python-dev \
+        python3-dev \
         autoconf \
         pkg-config \
         bison \
@@ -35,25 +36,23 @@ RUN apt-get -qq --yes update && \
         # Use curl to download additional resources
         curl
 
-WORKDIR /build
-RUN curl -fsSL https://ftp.gnu.org/gnu/guile/guile-1.8.8.tar.gz | tar -xz  && \
-    curl -fsSLO http://www.gust.org.pl/projects/e-foundry/tex-gyre/whole/tg2_501otf.zip && \
-    unzip -q tg2_501otf.zip && \
-    curl -fsSL https://lilypond.org/download/sources/v${VERSION%.*}/lilypond-$VERSION.tar.gz | tar -xz
+# Build Guile 1.8.8
+WORKDIR "/build/guile-1.8.8"
+RUN curl -fsSL https://ftp.gnu.org/gnu/guile/guile-1.8.8.tar.gz \
+        | tar --extract --gzip --strip-components=1 \
+    && ./configure --prefix=/opt --disable-error-on-warning \
+    && make -s -j$(($(nproc)+1)) \
+    && make -s install
 
-ENV PATH="/opt/bin:$PATH" PKG_CONFIG_PATH="/opt/lib/pkgconfig:$PKG_CONFIG_PATH"
-
-# Install Guile 1.8.8
-WORKDIR /build/guile-1.8.8
-RUN ./configure --prefix=/opt --disable-error-on-warning && \
-    make -s -j$(($(nproc)+1)) && \
-    make -s install
-
-# Install LilyPond
+# Build LilyPond
 WORKDIR "/build/lilypond-$VERSION"
-RUN ./autogen.sh --prefix=/opt --disable-documentation --with-texgyre-dir=/build/tg2_501otf && \
-    make -s -j$(($(nproc)+1)) && \
-    make -s install
+RUN curl -fsSL http://www.gust.org.pl/projects/e-foundry/tex-gyre/whole/tg2_501otf.zip -o ../tg2_501otf.zip \
+    && unzip -q ../tg2_501otf.zip -d .. \
+    && curl -fsSL https://lilypond.org/download/sources/v${VERSION%.*}/lilypond-$VERSION.tar.gz \
+        | tar --extract --gzip --strip-components=1 \
+    && ./autogen.sh --prefix=/opt --disable-documentation --with-texgyre-dir=/build/tg2_501otf \
+    && make -s -j$(($(nproc)+1)) \
+    && make -s install
 
 
 ########################################################################################
@@ -71,7 +70,7 @@ RUN apt-get -qq --yes update && \
         ghostscript \
         libpangoft2-1.0 \
         libltdl7 \
-        python2-minimal && \
+        python3-minimal && \
     # Update Fonts
     apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
