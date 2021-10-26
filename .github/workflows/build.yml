@@ -62,4 +62,4 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker push "$REPO"
+          docker push "$REPO" --all-tags
