@@ -14,6 +14,7 @@ RUN apt-get -qq --yes update && \
     # See http://lilypond.org/doc/v2.20/Documentation/topdocs/INSTALL#other
     apt-get -qq --yes install \
         build-essential \
+        guile-2.2-dev \
         python3-dev \
         autoconf \
         pkg-config \
@@ -29,20 +30,9 @@ RUN apt-get -qq --yes update && \
         t1utils \
         texlive-lang-cyrillic \
         libpango1.0-dev \
-        # The following dependencies are required to build guile
-        libtool \
-        libgmp-dev \
-        libreadline-dev \
         # Use curl to download additional resources
-        curl
-
-# Build Guile 1.8.8
-WORKDIR "/build/guile-1.8.8"
-RUN curl -fsSL https://ftp.gnu.org/gnu/guile/guile-1.8.8.tar.gz \
-        | tar --extract --gzip --strip-components=1 \
-    && ./configure --prefix=/opt --disable-error-on-warning \
-    && make -s -j$(($(nproc)+1)) \
-    && make -s install
+        curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Build LilyPond
 WORKDIR "/build/lilypond-$VERSION"
@@ -65,6 +55,7 @@ LABEL maintainer="Kim Wittenburg <codello@wittenburg.kim>" version="$VERSION"
 
 RUN apt-get -qq --yes update && \
     apt-get -qq --yes install \
+        guile-2.2 \
         libfontconfig1 \
         libfreetype6 \
         ghostscript \
@@ -96,6 +87,7 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
         wget \
         ttf-dejavu \
         ttf-mscorefonts-installer && \
+    rm -rf /var/lib/apt/lists/* && \
     # This fix is taken from here:
     # https://askubuntu.com/questions/1163560/change-mirror-for-ttf-mscorefonts-installer
     awk '/Url/ {sub("downloads[.]sourceforge[.]net/corefonts","cfhcable.dl.sourceforge.net/project/corefonts/the%20fonts/final",$2); system("wget "$2)}' /usr/share/package-data-downloads/ttf-mscorefonts-installer && \
