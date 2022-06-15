@@ -39,9 +39,9 @@ jobs:
           TAGS: ${{ github.events.inputs.tags }}
         run: |
           if [ "$VERSION" ]; then
-            VALUES=$(jq -nc '[{version: env.VERSION, tags: (env.TAGS // "" | split("\\s*,\\s*"; "") | map(select(length > 0)))}]')
+            VALUES=$(jq -nc '[{version: env.VERSION, tags: (env.TAGS // "" | sub("\\s*,\\s*"; "\n"))}]')
           else
-            VALUES=$(jq -c '[to_entries[] | .value * {tags: [.key, (.value.tags // [])[]]}]' versions.json)
+            VALUES=$(jq -c '[to_entries[] | .value * {tags: (.key + "\n" + (.value.tags // [] | join("\n")))}]' versions.json)
           fi
           MATRIX=$(jq -c '{include: .}' <<< "$VALUES")
           echo "::set-output name=matrix::$MATRIX"
@@ -68,7 +68,7 @@ jobs:
             ghcr.io/codello/lilypond
           tags: |
             type=raw,value=${{ matrix.version }}
-            ${{ join(matrix.tags, fromJSON('\n')) }}
+            ${{ matrix.tags }}
           labels: |
             maintainer=Kim Wittenburg <codello@wittenburg.kim>
             org.opencontainers.image.version=${{ matrix.version }}
