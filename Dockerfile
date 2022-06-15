@@ -1,9 +1,10 @@
 ARG VERSION
+ARG BASE=ubuntu:jammy
 
 ########################################################################################
 # Build LilyPond on the latest Ubuntu. Unfortunately compiling does not work on alpine.
 ########################################################################################
-FROM ubuntu:jammy AS build
+FROM $BASE AS build
 ARG VERSION
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PATH="/opt/bin:$PATH" PKG_CONFIG_PATH="/opt/lib/pkgconfig:$PKG_CONFIG_PATH"
@@ -46,7 +47,7 @@ RUN curl -fsSL http://www.gust.org.pl/projects/e-foundry/tex-gyre/whole/tg2_501o
 ########################################################################################
 # Install Microsoft fonts in a new ubuntu environment
 ########################################################################################
-FROM ubuntu:jammy AS build-fonts
+FROM $BASE AS build-fonts
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install Additional Fonts
@@ -67,7 +68,7 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
 ########################################################################################
 # Install runtime dependencies and copy the build artifacts from the previous stage.
 ########################################################################################
-FROM ubuntu:jammy
+FROM $BASE
 ARG VERSION
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -103,5 +104,5 @@ COPY ./fonts/*/svg/* "/opt/share/lilypond/$VERSION/fonts/svg/"
 
 ENV PATH="/opt/bin:$PATH" LD_LIBRARY_PATH="/opt/lib:$LD_LIBRARY_PATH"
 
-WORKDIR /ly
+WORKDIR /work
 ENTRYPOINT ["lilypond"]
