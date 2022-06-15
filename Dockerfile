@@ -1,9 +1,9 @@
-ARG VERSION=2.20.0
+ARG VERSION
 
 ########################################################################################
 # Build LilyPond on the latest Ubuntu. Unfortunately compiling does not work on alpine.
 ########################################################################################
-FROM ubuntu AS build-basic
+FROM ubuntu:jammy AS build
 ARG VERSION
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PATH="/opt/bin:$PATH" PKG_CONFIG_PATH="/opt/lib/pkgconfig:$PKG_CONFIG_PATH"
@@ -11,7 +11,7 @@ ENV PATH="/opt/bin:$PATH" PKG_CONFIG_PATH="/opt/lib/pkgconfig:$PKG_CONFIG_PATH"
 # Install Build Dependencies
 RUN apt-get -qq --yes update && \
     # LilyPond Build Dependencies
-    # See http://lilypond.org/doc/v2.20/Documentation/topdocs/INSTALL#other
+    # See https://lilypond.org/doc/v2.23/Documentation/contributor/requirements-for-compiling-lilypond#other
     apt-get -qq --yes install \
         build-essential \
         guile-2.2-dev \
@@ -44,39 +44,10 @@ RUN curl -fsSL http://www.gust.org.pl/projects/e-foundry/tex-gyre/whole/tg2_501o
     && make -s -j$(($(nproc)+1)) \
     && make -s install
 
-
-########################################################################################
-# Install runtime dependencies and copy the build artifacts from the previous stage.
-########################################################################################
-FROM ubuntu AS basic
-ARG VERSION
-ARG DEBIAN_FRONTEND=noninteractive
-LABEL maintainer="Kim Wittenburg <codello@wittenburg.kim>" version="$VERSION"
-
-RUN apt-get -qq --yes update && \
-    apt-get -qq --yes install \
-        guile-2.2 \
-        libfontconfig1 \
-        libfreetype6 \
-        ghostscript \
-        libpangoft2-1.0 \
-        libltdl7 \
-        python3-minimal && \
-    # Update Fonts
-    apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY --from=build-basic /opt /opt
-ENV PATH="/opt/bin:$PATH" LD_LIBRARY_PATH="/opt/lib:$LD_LIBRARY_PATH"
-
-WORKDIR /ly
-ENTRYPOINT ["lilypond"]
-
-
 ########################################################################################
 # Install Microsoft fonts in a new ubuntu environment
 ########################################################################################
-FROM ubuntu AS build-fonts
+FROM ubuntu:jammy AS build-fonts
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install Additional Fonts
@@ -85,7 +56,7 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
     apt-get -qq --yes update && \
     apt-get -qq --yes install \
         wget \
-        ttf-dejavu \
+        fonts-dejavu-extra \
         ttf-mscorefonts-installer && \
     rm -rf /var/lib/apt/lists/* && \
     # This fix is taken from here:
@@ -95,11 +66,34 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
 
 
 ########################################################################################
-# Copy fonts into the final image.
+# Install runtime dependencies and copy the build artifacts from the previous stage.
 ########################################################################################
-FROM basic AS fonts
+FROM ubuntu:jammy
 ARG VERSION
+ARG DEBIAN_FRONTEND=noninteractive
 
+RUN apt-get -qq --yes update && \
+    apt-get -qq --yes install \
+        guile-2.2 \
+        libfontconfig1 \
+        libfreetype6 \
+        ghostscript \
+        libpangoft2-1.0 \
+        libltdl7 \
+        python3-minimal \
+        # Some tools for convenience
+        make \
+        jq \
+        unzip \
+        curl \
+        ca-certificates \
+    # Update Fonts
+    && apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /opt /opt
+
+# Copy fonts into the final image.
 COPY --from=build-fonts /usr/share/fonts /usr/share/fonts
 COPY ./fonts/*/supplementary-fonts/*.otf ./fonts/*/supplementary-files/*/*.otf /usr/share/fonts/opentype/
 COPY ./fonts/*/supplementary-fonts/*.ttf ./fonts/*/supplementary-files/*/*.ttf /usr/share/fonts/truetype/
@@ -108,19 +102,7 @@ COPY ./fonts/*/otf ./fonts/*/woff "/opt/share/lilypond/$VERSION/fonts/otf/"
 COPY ./fonts/*/svg/* "/opt/share/lilypond/$VERSION/fonts/svg/"
 
 
-########################################################################################
-# The shell image is useful in CI and other non-interactive environments where you might
-# want to execute more than one lilypond command.
-########################################################################################
-FROM fonts AS shell
-RUN apt-get -qq --yes update && \
-    apt-get -qq --yes install \
-        make \
-        jq \
-        unzip \
-        curl \
-        ca-certificates && \
-    apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
-    rm -rf /var/lib/apt/lists/*
+ENV PATH="/opt/bin:$PATH" LD_LIBRARY_PATH="/opt/lib:$LD_LIBRARY_PATH"
 
-ENTRYPOINT []
+WORKDIR /ly
+ENTRYPOINT ["lilypond"]

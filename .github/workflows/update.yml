@@ -1,0 +1,46 @@
+name: Automatic Update
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  update-fonts:
+    name: Update Fonts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with: {submodules: recursive}
+      - name: Update Submodules
+        run: git submodule update --remote --recursive
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+            branch: update-fonts
+            commit-message: Update notation fonts
+            title: Update Notation Fonts
+            delete-branch: true
+  update-lilypond:
+    name: Update LilyPond
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Fetch Latest Versions
+        run: |
+          STABLE=$(curl -sS https://lilypond.org/download.html | grep -E --only-matching '\d+\.\d+\.\d+' | head -n1)
+          DEV=$(curl -sS https://lilypond.org/development.html | grep -E --only-matching '\d+\.\d+\.\d+' | head -n1)
+
+          cat versions.json | jq '.[env.STABLE | capture("(?<v>\\d+.\\d+).\\d+").v].version = env.STABLE' > versions.json
+          cat versions.json | jq '.[env.DEV | capture("(?<v>\\d+.\\d+).\\d+").v].version = env.DEV' > versions.json
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+            branch: update-lilypond
+            commit-message: Update LilyPond
+            title: Update LilyPond
+            delete-branch: true
+

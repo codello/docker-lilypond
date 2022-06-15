@@ -1,8 +1,7 @@
 name: Docker Hub Description
 on:
   push:
-    branches:
-      - master
+    branches: [main]
     paths:
       - README.md
       - .github/workflows/readme.yml
@@ -11,10 +10,11 @@ jobs:
     name: Docker Hub Description
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Update Docker Hub Description
-      uses: peter-evans/dockerhub-description@v2
-      env:
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        DOCKERHUB_REPOSITORY: codello/lilypond
+      uses: peter-evans/dockerhub-description@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        repository: codello/lilypond
+        short-description: ${{ github.event.repository.description }}
