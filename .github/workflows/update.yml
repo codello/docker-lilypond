@@ -30,8 +30,9 @@ jobs:
         uses: actions/checkout@v3
       - name: Fetch Latest Versions
         run: |
-          STABLE=$(curl -sS https://lilypond.org/download.html | grep -E --only-matching '\d+\.\d+\.\d+' | head -n1)
-          DEV=$(curl -sS https://lilypond.org/development.html | grep -E --only-matching '\d+\.\d+\.\d+' | head -n1)
+          set -e
+          export STABLE=$(curl -sS https://lilypond.org/download.html | grep -E --only-matching '\d+\.\d+\.\d+' | head -n1)
+          export DEV=$(curl -sS https://lilypond.org/development.html | grep -E --only-matching '\d+\.\d+\.\d+' | head -n1)
 
           cat versions.json | jq '.[env.STABLE | capture("(?<v>\\d+.\\d+).\\d+").v].version = env.STABLE' > versions.json
           cat versions.json | jq '.[env.DEV | capture("(?<v>\\d+.\\d+).\\d+").v].version = env.DEV' > versions.json

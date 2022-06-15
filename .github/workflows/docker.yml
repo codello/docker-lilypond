@@ -84,6 +84,7 @@ jobs:
       - name: Build Image
         uses: docker/build-push-action@v3
         with:
+          context: .
           push: false
           load: true
           tags: ${{ env.TEST_TAG }}
@@ -96,6 +97,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         uses: docker/build-push-action@v3
         with:
+          context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.output.labels }}
