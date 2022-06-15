@@ -26,7 +26,7 @@ env:
 jobs:
   setup:
     name: Setup Build Workflow
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
@@ -48,7 +48,7 @@ jobs:
 
   build:
     name: Build LilyPond ${{ matrix.version }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [setup]
     strategy:
       fail-fast: false
