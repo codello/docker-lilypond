@@ -68,7 +68,7 @@ jobs:
             ghcr.io/codello/lilypond
           tags: |
             type=raw,value=${{ matrix.version }}
-            ${{ join(matrix.tags, '\n') }}
+            ${{ join(matrix.tags, fromJSON('\n')) }}
           labels: |
             maintainer=Kim Wittenburg <codello@wittenburg.kim>
             org.opencontainers.image.version=${{ matrix.version }}
