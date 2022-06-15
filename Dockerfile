@@ -31,8 +31,7 @@ RUN apt-get -qq --yes update && \
         texlive-lang-cyrillic \
         libpango1.0-dev \
         # Use curl to download additional resources
-        curl \
-    && rm -rf /var/lib/apt/lists/*
+        curl
 
 # Build LilyPond
 WORKDIR "/build/lilypond-$VERSION"

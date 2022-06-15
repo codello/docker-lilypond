@@ -89,10 +89,10 @@ jobs:
           load: true
           tags: ${{ env.TEST_TAG }}
           build-args: VERSION=${{ matrix.version }}
-      - name: Test Image
-        run: |
-          docker run -v $(pwd):/ly ${{ env.TEST_TAG }} test.ly
-          test -f test.pdf
+      # - name: Test Image
+      #   run: |
+      #     docker run -v $(pwd):/ly ${{ env.TEST_TAG }} test.ly
+      #     test -f test.pdf
       - name: Push Image
         if: github.ref == 'refs/heads/master'
         uses: docker/build-push-action@v3
