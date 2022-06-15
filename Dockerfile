@@ -1,5 +1,5 @@
 ARG VERSION
-ARG BASE=ubuntu:jammy
+ARG BASE=ubuntu:focal
 
 ########################################################################################
 # Build LilyPond on the latest Ubuntu. Unfortunately compiling does not work on alpine.
