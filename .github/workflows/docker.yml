@@ -28,6 +28,8 @@ jobs:
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
       - name: Load version matrix
         id: matrix
         env:
