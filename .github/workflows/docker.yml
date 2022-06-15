@@ -21,7 +21,7 @@ on:
     branches: [main]
 
 env:
-  TEST_TAG: "codello/lilypond:test"
+  IMAGE: "codello/lilypond"
 
 jobs:
   setup:
@@ -64,8 +64,8 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            codello/lilypond
-            ghcr.io/codello/lilypond
+            ${{ env.IMAGE }}
+            ghcr.io/${{ env.IMAGE }}
           tags: |
             type=raw,value=${{ matrix.version }}
             ${{ matrix.tags }}
@@ -91,13 +91,15 @@ jobs:
           context: ./
           push: false
           load: true
-          tags: ${{ env.TEST_TAG }}
+          tags: ${{ env.IMAGE }}:${{ matrix.version }}
           build-args: VERSION=${{ matrix.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Test Image
+        env:
+          VERSION: ${{ matrix.version }}
         run: |
-          docker run -v $(pwd):/work "$TEST_TAG" test.ly
+          docker run -v $(pwd):/work "$IMAGE:$VERSION" test.ly
           test -f test.pdf
       - name: Push Image
         if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || ${{ github.events.inputs.push }}
