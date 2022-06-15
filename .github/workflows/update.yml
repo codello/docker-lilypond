@@ -15,7 +15,7 @@ jobs:
       - name: Update Submodules
         run: git submodule update --remote --recursive
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
             token: ${{ secrets.GITHUB_TOKEN }}
             branch: update-fonts
@@ -36,7 +36,7 @@ jobs:
           cat versions.json | jq '.[env.STABLE | capture("(?<v>\\d+.\\d+).\\d+").v].version = env.STABLE' > versions.json
           cat versions.json | jq '.[env.DEV | capture("(?<v>\\d+.\\d+).\\d+").v].version = env.DEV' > versions.json
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
             token: ${{ secrets.GITHUB_TOKEN }}
             branch: update-lilypond

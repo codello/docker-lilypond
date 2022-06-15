@@ -40,10 +40,12 @@ jobs:
             VALUES=$(jq -c '[to_entries[] | .value * {tags: [.key, (.value.tags // [])[]]}]' versions.json)
           fi
           MATRIX=$(jq -c '{include: .}' <<< "$VALUES")
+          echo "Matrix"
+          echo "$MATRIX"
           echo "::set-output name=matrix::$MATRIX"
 
   build:
-    name: Build ${{ matrix.lilypond.version || matrix.lilypond }}
+    name: Build LilyPond ${{ matrix.version }}
     runs-on: ubuntu-latest
     needs: [setup]
     strategy:
