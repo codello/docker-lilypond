@@ -4,10 +4,15 @@
   },
   "2.22": {
     "version": "2.22.2",
-    "tags": ["latest", "stable"]
+    "tags": [
+      "latest",
+      "stable"
+    ]
   },
   "2.23": {
     "version": "2.23.9",
-    "tags": ["dev"]
+    "tags": [
+      "dev"
+    ]
   }
 }
