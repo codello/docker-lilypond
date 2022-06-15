@@ -93,8 +93,6 @@ jobs:
           load: true
           tags: ${{ env.IMAGE }}:${{ matrix.version }}
           build-args: VERSION=${{ matrix.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
       - name: Test Image
         env:
           VERSION: ${{ matrix.version }}
