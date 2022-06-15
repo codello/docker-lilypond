@@ -34,14 +34,12 @@ jobs:
           VERSION: ${{ github.events.inputs.version }}
           TAGS: ${{ github.events.inputs.tags }}
         run: |
-          if [ -z "$VERSION" ]; then
+          if [ "$VERSION" ]; then
             VALUES=$(jq -nc '[{version: env.VERSION, tags: (env.TAGS // "" | split("\\s*,\\s*"; "") | map(select(length > 0)))}]')
           else
             VALUES=$(jq -c '[to_entries[] | .value * {tags: [.key, (.value.tags // [])[]]}]' versions.json)
           fi
           MATRIX=$(jq -c '{include: .}' <<< "$VALUES")
-          echo "Matrix"
-          echo "$MATRIX"
           echo "::set-output name=matrix::$MATRIX"
 
   build:
