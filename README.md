@@ -1,6 +1,6 @@
 # LilyPond in Docker – “... music notation for everyone“
 
-![Docker Image](https://github.com/Codello/docker-lilypond/workflows/Docker%20Image/badge.svg)
+![Docker Image](https://github.com/codello/docker-lilypond/actions/workflows/docker.yml/badge.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/codello/lilypond)
 
 This docker image provides an easy way do run [LilyPond](https://lilypond.org) inside docker.
