@@ -34,7 +34,7 @@ jobs:
         run: |
           set -e
           for source in download development; do
-            version=$(curl -sS "https://lilypond.org/$source.html" | grep -E --only-matching '\d+\.\d+\.\d+' | head -n1)
+            version=$(curl -sS "https://lilypond.org/$source.html" | grep -E --only-matching '[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+' | head -n1)
             echo "Found version $version"
             VERSION="$version" jq '.[env.VERSION | capture("(?<v>\\d+.\\d+).\\d+").v].version = env.VERSION' versions.json > versions.json.tmp
             mv versions.json.tmp versions.json
