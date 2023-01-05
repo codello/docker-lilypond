@@ -75,6 +75,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -qq --yes update && \
     apt-get -qq --yes install \
         guile-2.2 \
+        libcairo2 \
         libfontconfig1 \
         libfreetype6 \
         ghostscript \
