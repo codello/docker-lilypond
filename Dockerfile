@@ -31,16 +31,15 @@ RUN apt-get -qq --yes update && \
         t1utils \
         texlive-lang-cyrillic \
         libpango1.0-dev \
+        fonts-texgyre \
         # Use curl to download additional resources
         curl
 
 # Build LilyPond
 WORKDIR "/build/lilypond-$VERSION"
-RUN curl -fsSL http://www.gust.org.pl/projects/e-foundry/tex-gyre/whole/tg2_501otf.zip -o ../tg2_501otf.zip \
-    && unzip -q ../tg2_501otf.zip -d .. \
-    && curl -fsSL https://lilypond.org/download/sources/v${VERSION%.*}/lilypond-$VERSION.tar.gz \
+RUN curl -fsSL https://lilypond.org/download/sources/v${VERSION%.*}/lilypond-$VERSION.tar.gz \
         | tar --extract --gzip --strip-components=1 \
-    && ./autogen.sh --prefix=/opt --disable-documentation --with-texgyre-dir=/build/tg2_501otf \
+    && ./autogen.sh --prefix=/opt --disable-documentation \
     && make -s -j$(($(nproc)+1)) \
     && make -s install
 
@@ -88,6 +87,7 @@ RUN apt-get -qq --yes update && \
         unzip \
         curl \
         ca-certificates \
+        fonts-texgyre \
     # Update Fonts
     && apt-get -qq --yes purge --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && rm -rf /var/lib/apt/lists/*
