@@ -86,7 +86,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: ./
           push: false
@@ -101,7 +101,7 @@ jobs:
           test -f test.pdf
       - name: Push Image
         if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || ${{ github.events.inputs.push }}
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: ./
           push: true
