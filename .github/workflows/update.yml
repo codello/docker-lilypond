@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with: {submodules: recursive}
       - name: Update Submodules
         run: git submodule update --remote --recursive
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Fetch Latest Versions
         # "download" source corresponds to the latest stable version.
         # "development" source corresponds to the latest dev version.
