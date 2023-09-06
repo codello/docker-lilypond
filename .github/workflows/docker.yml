@@ -44,7 +44,7 @@ jobs:
             VALUES=$(jq -c '[to_entries[] | .value * {tags: (.key + "\n" + (.value.tags // [] | join("\n")))}]' versions.json)
           fi
           MATRIX=$(jq -c '{include: .}' <<< "$VALUES")
-          echo "::set-output name=matrix::$MATRIX"
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
   build:
     name: Build LilyPond ${{ matrix.version }}
