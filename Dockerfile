@@ -1,11 +1,13 @@
 ARG VERSION
 ARG BASE=ubuntu:jammy
+ARG GUILE_VERSION=2.2
 
 ########################################################################################
 # Build LilyPond on the latest Ubuntu. Unfortunately compiling does not work on alpine.
 ########################################################################################
 FROM $BASE AS build
 ARG VERSION
+ARG GUILE_VERSION
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PATH="/opt/bin:$PATH" PKG_CONFIG_PATH="/opt/lib/pkgconfig:$PKG_CONFIG_PATH"
 
@@ -15,7 +17,7 @@ RUN apt-get -qq --yes update && \
     # See https://lilypond.org/doc/v2.23/Documentation/contributor/requirements-for-compiling-lilypond#other
     apt-get -qq --yes install \
         build-essential \
-        guile-2.2-dev \
+        guile-$GUILE_VERSION-dev \
         python3-dev \
         autoconf \
         pkg-config \
@@ -69,11 +71,12 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
 ########################################################################################
 FROM $BASE
 ARG VERSION
+ARG GUILE_VERSION
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get -qq --yes update && \
     apt-get -qq --yes install \
-        guile-2.2 \
+        guile-$GUILE_VERSION \
         libcairo2 \
         libfontconfig1 \
         libfreetype6 \

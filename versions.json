@@ -1,6 +1,7 @@
 {
   "2.24": {
     "version": "2.24.3",
+    "guile": "2.2",
     "tags": [
       "latest",
       "stable"
@@ -8,6 +9,7 @@
   },
   "2.25": {
     "version": "2.25.13",
+    "guile": "3.0",
     "tags": [
       "dev"
     ]

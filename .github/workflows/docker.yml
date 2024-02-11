@@ -92,7 +92,9 @@ jobs:
           push: false
           load: true
           tags: ${{ env.IMAGE }}:${{ matrix.version }}
-          build-args: VERSION=${{ matrix.version }}
+          build-args: |
+            VERSION=${{ matrix.version }}
+            GUILE_VERSION=${{ matrix.guile }}
       - name: Test Image
         env:
           VERSION: ${{ matrix.version }}
@@ -107,4 +109,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: VERSION=${{ matrix.version }}
+          build-args: |
+            VERSION=${{ matrix.version }}
+            GUILE_VERSION=${{ matrix.guile }}
