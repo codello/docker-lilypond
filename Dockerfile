@@ -1,5 +1,5 @@
 ARG VERSION
-ARG BASE=ubuntu:jammy
+ARG BASE=ubuntu:noble
 ARG GUILE_VERSION=2.2
 
 ########################################################################################
