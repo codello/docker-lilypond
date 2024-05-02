@@ -62,7 +62,7 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
     rm -rf /var/lib/apt/lists/* && \
     # This fix is taken from here:
     # https://askubuntu.com/questions/1163560/change-mirror-for-ttf-mscorefonts-installer
-    awk '/Url/ {sub("downloads[.]sourceforge[.]net/corefonts","cfhcable.dl.sourceforge.net/project/corefonts/the%20fonts/final",$2); system("wget "$2)}' /usr/share/package-data-downloads/ttf-mscorefonts-installer && \
+    awk '/Url/ {sub("downloads[.]sourceforge[.]net/corefonts","downloads.sourceforge.net/project/corefonts/the%20fonts/final",$2); system("wget "$2)}' /usr/share/package-data-downloads/ttf-mscorefonts-installer && \
     /usr/lib/msttcorefonts/update-ms-fonts $(pwd)/*.exe
 
 
