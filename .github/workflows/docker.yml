@@ -35,16 +35,17 @@ jobs:
       - name: Load version matrix
         id: matrix
         env:
-          VERSION: ${{ github.events.inputs.version }}
-          TAGS: ${{ github.events.inputs.tags }}
+          VERSION: ${{ inputs.version }}
+          TAGS: ${{ inputs.tags }}
         run: |
-          if [ "$VERSION" ]; then
-            VALUES=$(jq -nc '[{version: env.VERSION, tags: (env.TAGS // "" | sub("\\s*,\\s*"; "\n"))}]')
-          else
-            VALUES=$(jq -c '[to_entries[] | .value * {tags: (.key + "\n" + (.value.tags // [] | join("\n")))}]' versions.json)
-          fi
-          MATRIX=$(jq -c '{include: .}' <<< "$VALUES")
-          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          {
+            echo -n "matrix="
+            if [ "$VERSION" ]; then
+              jq -nc '[{version: env.VERSION, tags: (env.TAGS // "" | sub("\\s*,\\s*"; "\n"))}]'
+            else
+              jq -c '[to_entries[] | .value * {tags: (.key + "\n" + (.value.tags // [] | join("\n")))}]' versions.json
+            fi
+          } >> "$GITHUB_OUTPUT"
 
   build:
     name: Build LilyPond ${{ matrix.version }}
@@ -52,7 +53,8 @@ jobs:
     needs: [setup]
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
+      matrix:
+        include: ${{ fromJSON(needs.setup.outputs.matrix) }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
@@ -92,9 +94,7 @@ jobs:
           push: false
           load: true
           tags: ${{ env.IMAGE }}:${{ matrix.version }}
-          build-args: |
-            VERSION=${{ matrix.version }}
-            GUILE_VERSION=${{ matrix.guile }}
+          build-args: VERSION=${{ matrix.version }}
       - name: Test Image
         env:
           VERSION: ${{ matrix.version }}
@@ -109,6 +109,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VERSION=${{ matrix.version }}
-            GUILE_VERSION=${{ matrix.guile }}
+          build-args: VERSION=${{ matrix.version }}

@@ -1,0 +1,91 @@
+ARG VERSION
+
+FROM alpine AS base
+
+# Runtime Dependencies
+# See https://lilypond.org/doc/v2.26/Documentation/contributor/requirements-for-running-lilypond
+RUN apk add --no-cache \
+    cairo \
+    fontconfig \
+    freetype \
+    ghostscript \
+    glib \
+    guile \
+    libpng \
+    pango \
+    python3 \
+    font-urw-base35 \
+    # Some tools for convenience
+    bash \
+    make \
+    jq \
+    unzip \
+    curl \
+    ca-certificates
+
+FROM base AS build
+ARG VERSION
+
+# Build Dependencies
+# See https://lilypond.org/doc/v2.26/Documentation/contributor/other
+RUN apk add --no-cache \
+    # Dev Dependencies for Runtime Libraries
+    pango-dev \
+    guile-dev \
+    gc-dev \
+    fontconfig-dev \
+    # Build Dependencies
+    build-base \
+    autoconf \
+    pkgconf \
+    bison \
+    flex-dev \
+    fontforge \
+    gettext \
+    texlive \
+    texmf-dist-metapost \
+    texmf-dist-plaingeneric \
+    texmf-dist-langcyrillic \
+    perl \
+    texinfo \
+    t1utils \
+    # Additional Requirements not listed in the documentation
+    rsync \
+    imagemagick
+
+# Build LilyPond
+WORKDIR "/build/lilypond-$VERSION"
+RUN curl -fsSL https://lilypond.org/download/sources/v${VERSION%.*}/lilypond-$VERSION.tar.gz \
+        | tar --extract --gzip --strip-components=1 \
+    && ./autogen.sh --prefix=/opt --disable-documentation \
+    && make -s -j$(($(nproc)+1)) \
+    && make -s install
+
+FROM alpine AS fonts
+
+RUN apk add --no-cache \
+    msttcorefonts-installer \
+    font-dejavu
+
+RUN update-ms-fonts
+
+FROM base
+
+ARG VERSION
+
+COPY --from=build /opt /opt
+
+# Copy fonts into the final image.
+COPY --from=fonts /usr/share/fonts /usr/share/fonts
+COPY ./fonts/*/supplementary-ffonts/*.otf ./fonts/*/supplementary-files/*/*.otf /usr/share/fonts/opentype/
+COPY ./fonts/*/supplementary-fonts/*.ttf ./fonts/*/supplementary-files/*/*.ttf /usr/share/fonts/truetype/
+COPY ./fonts/*/stylesheet/* "/opt/share/lilypond/$VERSION/ly/"
+COPY ./fonts/*/otf ./fonts/*/woff /opt/share/lilypond/$VERSION/fonts/otf/
+COPY ./fonts/*/svg/* "/opt/share/lilypond/$VERSION/fonts/svg/"
+# TODO: Add TexGyre Fonts: https://www.gust.org.pl/projects/e-foundry/tex-gyre/schola/index_html
+
+
+ENV PATH="/opt/bin:$PATH"
+
+WORKDIR /work
+ENTRYPOINT ["lilypond"]

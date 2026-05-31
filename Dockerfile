@@ -1,15 +1,13 @@
 ARG VERSION
-ARG BASE=ubuntu:noble
-ARG GUILE_VERSION=2.2
+ARG BASE=ubuntu:resolute
 
 ########################################################################################
 # Build LilyPond on the latest Ubuntu. Unfortunately compiling does not work on alpine.
 ########################################################################################
 FROM $BASE AS build
 ARG VERSION
-ARG GUILE_VERSION
 ARG DEBIAN_FRONTEND=noninteractive
-ENV PATH="/opt/bin:$PATH" PKG_CONFIG_PATH="/opt/lib/pkgconfig:$PKG_CONFIG_PATH"
+# ENV PATH="/opt/bin:$PATH" PKG_CONFIG_PATH="/opt/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # Install Build Dependencies
 RUN apt-get -qq --yes update && \
@@ -17,7 +15,7 @@ RUN apt-get -qq --yes update && \
     # See https://lilypond.org/doc/v2.23/Documentation/contributor/requirements-for-compiling-lilypond#other
     apt-get -qq --yes install \
         build-essential \
-        guile-$GUILE_VERSION-dev \
+        guile-3.0-dev \
         python3-dev \
         autoconf \
         pkg-config \
@@ -71,12 +69,11 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
 ########################################################################################
 FROM $BASE
 ARG VERSION
-ARG GUILE_VERSION
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get -qq --yes update && \
     apt-get -qq --yes install \
-        guile-$GUILE_VERSION \
+        guile-3.0 \
         libcairo2 \
         libfontconfig1 \
         libfreetype6 \
@@ -99,14 +96,15 @@ COPY --from=build /opt /opt
 
 # Copy fonts into the final image.
 COPY --from=build-fonts /usr/share/fonts /usr/share/fonts
-COPY ./fonts/*/supplementary-fonts/*.otf ./fonts/*/supplementary-files/*/*.otf /usr/share/fonts/opentype/
+COPY ./fonts/*/supplementary-ffonts/*.otf ./fonts/*/supplementary-files/*/*.otf /usr/share/fonts/opentype/
 COPY ./fonts/*/supplementary-fonts/*.ttf ./fonts/*/supplementary-files/*/*.ttf /usr/share/fonts/truetype/
 COPY ./fonts/*/stylesheet/* "/opt/share/lilypond/$VERSION/ly/"
-COPY ./fonts/*/otf ./fonts/*/woff "/opt/share/lilypond/$VERSION/fonts/otf/"
+COPY ./fonts/*/otf ./fonts/*/woff /opt/share/lilypond/$VERSION/fonts/otf/
 COPY ./fonts/*/svg/* "/opt/share/lilypond/$VERSION/fonts/svg/"
 
 
-ENV PATH="/opt/bin:$PATH" LD_LIBRARY_PATH="/opt/lib:$LD_LIBRARY_PATH"
+ENV PATH="/opt/bin:$PATH"
+# LD_LIBRARY_PATH="/opt/lib"
 
 WORKDIR /work
 ENTRYPOINT ["lilypond"]
