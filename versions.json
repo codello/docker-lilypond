@@ -1,10 +1,15 @@
 {
   "2.26": {
     "version": "2.26.0",
-    "tags": ["latest", "stable"]
+    "tags": [
+      "latest",
+      "stable"
+    ]
   },
   "2.27": {
     "version": "2.27.0",
-    "tags": ["dev"]
+    "tags": [
+      "dev"
+    ]
   }
 }
